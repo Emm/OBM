@@ -31,10 +31,12 @@
  * ***** END LICENSE BLOCK ***** */
 package fr.aliacom.obm.common.calendar;
 
+import java.util.Date;
 import java.util.List;
 
 import org.obm.sync.auth.AccessToken;
 import org.obm.sync.calendar.Event;
+import org.obm.sync.calendar.EventRecurrence;
 import org.obm.sync.calendar.ParticipationState;
 import org.obm.sync.server.mailer.AbstractMailer.NotificationException;
 
@@ -69,7 +71,18 @@ public class EventChangeHandler {
 				Event previousException = previous.getOccurrence(exception.getRecurrenceId());
 				update(notification, token, previousException, exception);
 			}
+			for (Date date : current.getNegativeExceptionsChanges(previous)) {
+				Event negativeException = makeNegativeException(current, date);
+				delete(negativeException, notification, token);
+			}
 		}
+	}
+
+	private Event makeNegativeException(Event event, Date date) {
+		Event negativeException = event.clone();
+		negativeException.setRecurrenceId(date);
+		negativeException.setRecurrence(new EventRecurrence());
+		return negativeException;
 	}
 
 	public void updateParticipationState(Event event, ObmUser calendarOwner, 

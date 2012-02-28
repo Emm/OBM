@@ -31,6 +31,7 @@
  * ***** END LICENSE BLOCK ***** */
 package fr.aliacom.obm;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -39,7 +40,11 @@ import org.easymock.EasyMock;
 import org.obm.icalendar.Ical4jUser;
 import org.obm.sync.auth.AccessToken;
 import org.obm.sync.calendar.Attendee;
+import org.obm.sync.calendar.Event;
+import org.obm.sync.calendar.EventExtId;
+import org.obm.sync.calendar.EventRecurrence;
 import org.obm.sync.calendar.ParticipationState;
+import org.obm.sync.calendar.RecurrenceKind;
 
 import com.google.common.collect.Lists;
 import com.linagora.obm.sync.Producer;
@@ -133,5 +138,28 @@ public class ToolBox {
 		Attendee mccarthyAttendee = ToolBox.getFakeAttendee("mccarthy");
 		mccarthyAttendee.setState(ParticipationState.NEEDSACTION);
 		return Lists.newArrayList(beriaAttendee, hooverAttendee, mccarthyAttendee);
+	}
+	
+	public static Event getFakeDailyRecurrentEvent(Date date, int sequence, Attendee... attendees) {
+		Event event = new Event();
+		event.setDate(date);
+		event.setSequence(sequence);
+		event.setExtId(new EventExtId("extId"));
+		
+		EventRecurrence recurrence = new EventRecurrence();
+		recurrence.setKind(RecurrenceKind.daily);
+		event.setRecurrence(recurrence);
+
+		event.setAttendees(Lists.newArrayList(attendees));
+		event.setOwnerEmail(attendees[0].getEmail());
+
+		return event;
+	}
+	
+	public static Event getFakeNegativeExceptionEvent(Event event, Date exceptionDate) {
+		Event ex = event.clone();
+		ex.setRecurrence(new EventRecurrence());
+		ex.setRecurrenceId(exceptionDate);
+		return ex;
 	}
 }

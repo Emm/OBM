@@ -32,7 +32,9 @@
 package org.obm.sync.calendar;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -576,6 +578,54 @@ public class EventTest {
 
 		EventRecurrence parentEventRecurrence = parent.getRecurrence();
 		Assertions.assertThat(parentEventRecurrence.getEventExceptions()).containsOnly(eventException);
+	}
+
+	@Test
+	public void testGetNegativeExceptionChangesWithNullEvent() {
+		Date exceptionDate = new Date();
+		Event ev1 = createEventWithNegativeExceptions(exceptionDate);
+		Event ev2 = null;
+		Collection<Date> difference = ev1.getNegativeExceptionsChanges(ev2);
+		Assertions.assertThat(difference).containsOnly(exceptionDate);
+	}
+
+	@Test
+	public void testGetNegativeExceptionChangesWithNonRecurrentEvent() {
+		Event ev1 = createOneEvent(1);
+		Event ev2 = null;
+		Collection<Date> difference = ev1.getNegativeExceptionsChanges(ev2);
+		Assertions.assertThat(difference).isEmpty();
+	}
+
+	@Test
+	public void testGetNegativeExceptionChangesWithIdenticalEvents() {
+		Date exceptionDate = new Date();
+		Event ev1 = createEventWithNegativeExceptions(exceptionDate);
+		Event ev2 = createEventWithNegativeExceptions(exceptionDate);
+		Collection<Date> difference = ev1.getNegativeExceptionsChanges(ev2);
+		Assertions.assertThat(difference).isEmpty();
+	}
+
+	@Test
+	public void testGetNegativeExceptionChangesWithDifferentEvents() {
+		Date exceptionDate1 = new Date();
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(exceptionDate1);
+		calendar.add(Calendar.MONTH, 1);
+		Date exceptionDate2 = calendar.getTime();
+		Event ev1 = createEventWithNegativeExceptions(exceptionDate1, exceptionDate2);
+		Event ev2 = createEventWithNegativeExceptions(exceptionDate1);
+		Collection<Date> difference = ev1.getNegativeExceptionsChanges(ev2);
+		Assertions.assertThat(difference).containsOnly(exceptionDate2);
+	}
+
+	private Event createEventWithNegativeExceptions(Date... negativeExceptions) {
+		Event event = createOneEvent(1);
+		Date eventDatePlusOneYear = new DateTime(event.getDate()).plusYears(1).toDate();
+		EventRecurrence recurrence = createDailyRecurrenceUntil(eventDatePlusOneYear);
+		recurrence.setExceptions(Arrays.asList(negativeExceptions));
+		event.setRecurrence(recurrence);
+		return event;
 	}
 
 	private Event createOneEvent(int nbAttendees) {

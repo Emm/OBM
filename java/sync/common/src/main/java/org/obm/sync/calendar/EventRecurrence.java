@@ -32,10 +32,14 @@
 package org.obm.sync.calendar;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
+
+import org.obm.push.utils.collection.Sets;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
@@ -238,6 +242,27 @@ public class EventRecurrence {
 				&& Objects.equal(this.eventExceptions, that.eventExceptions);
 		}
 		return false;
+	}
+
+	public Collection<Date> getNegativeExceptionsChanges(EventRecurrence recurrence) {
+		Collection<Date> changes = com.google.common.collect.Sets.newHashSet();
+		if (recurrence == null) {
+			return this.exceptions;
+		} else {
+			changes = Sets.difference(this.exceptions, recurrence.exceptions,
+					new Comparator<Date>() {
+						@Override
+						public int compare(Date o1, Date o2) {
+							return o1.compareTo(o2);
+						}
+					});
+
+		}
+		return changes;
+	}
+
+	public boolean hasNegativeExceptions() {
+		return this.exceptions != null && this.exceptions.size() > 0;
 	}
 
 }

@@ -400,7 +400,6 @@ public class EventNotificationServiceTest {
 			EasyMock.replay(mailer);
 			return mailer;
 		}
-		
 	}
 
 	public static class UpdateTests {
